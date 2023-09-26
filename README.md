@@ -1,5 +1,5 @@
-# Diffusion Time Probabilistic Model
-Official implementation of "On Diffusion Modeling for Anomaly Detection". Includes the code for diffusion-based models for tabular data with Diffusion Time Probabilistic Model (DTE) and multiple other baselines.
+# Diffusion Time Estimation
+Official implementation of "On Diffusion Modeling for Anomaly Detection". Includes the code for diffusion-based models for tabular data with Diffusion Time Estimation (DTE) and multiple other baselines.
 
 ## Setup Instructions
 
