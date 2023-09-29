@@ -116,6 +116,8 @@ For the semi-supervised setting, we use 0.5 of the normal data in the training s
 
 The total amount of compute required to reproduce our experiments with five seeds, including all of the baselines and the proposed DTE model amounts to 473 GPU-hours for the unsupervised setting and 225 GPU-hours for the semi-supervised setting on an RTX8000 GPU with 48 gigabytes of memory. There are a few models that are running on CPU only, which account for a few hours of runtime.
 
+![Semi-supervised AUCROC](figures/semi_aucroc.pdf)
+![Unsupervised AUCROC](figures/unsup_aucroc.pdf)
 
 **AUC ROC with standard deviation over 5 seeds for the semi-supervised setting.**
 
