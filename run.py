@@ -47,56 +47,52 @@ def main(args):
     utils = Utils() # utils function
     utils.set_seed(seed)
     
+    model_dict = {}
+
+    # Select models
+    for _ in ['IForest', 'OCSVM', 'COPOD', 'ECOD', 'FeatureBagging', 'HBOS', 'KNN', 'LODA',
+                      'LOF', 'MCD', 'PCA', 'DeepSVDD']:
+        model_dict[_] = PYOD
+        
+    model_dict['DAGMM'] = DAGMM
+    model_dict['DROCC'] = DROCC
+    model_dict['GOAD'] = GOAD
+    model_dict['ICL'] = ICL
+    model_dict['PlanarFlow'] = FlowModel
+    model_dict['DDPM'] = DDPM
+    model_dict['DTE-IG'] = DTEInverseGamma
+    model_dict['DTE-C'] = DTECategorical
+    
+    # Create dataframes to save the results
+    aucroc_name = dir + str(seed) + "_AUCROC.csv"
+    aucpr_name = dir + str(seed) + "_AUCPR.csv"
+    f1_name = dir + str(seed) + "_AUCF1.csv"
+    train_name = dir + str(seed) + "_TrainTime.csv"
+    inference_name = dir + str(seed) + "_InferenceTime.csv"
+    
+    try:
+        df_AUCROC = pd.read_csv(aucroc_name, index_col = 0) 
+    except:
+        df_AUCROC = pd.DataFrame(data=None)
+    try:
+        df_AUCPR = pd.read_csv(aucpr_name, index_col = 0)
+    except:
+        df_AUCPR = pd.DataFrame(data=None)
+    try:
+        df_F1 = pd.read_csv(f1_name, index_col = 0)
+    except:
+        df_F1 = pd.DataFrame(data=None)
+    try:
+        df_train = pd.read_csv(train_name, index_col = 0)
+    except:
+        df_train = pd.DataFrame(data=None)
+    try:
+        df_inference = pd.read_csv(inference_name, index_col = 0)
+    except:
+        df_inference = pd.DataFrame(data=None)
+    
     # Get the datasets from ADBench
-    #dataset_list = datagenerator.dataset_list_classical
-    #dataset_list=datagenerator.dataset_list_cv
-    #dataset_list = datagenerator.dataset_list_nlp
     for dataset_list in [datagenerator.dataset_list_classical, datagenerator.dataset_list_cv, datagenerator.dataset_list_nlp]:
-
-        model_dict = {}
-
-        # Select models
-        for _ in ['IForest', 'OCSVM', 'COPOD', 'ECOD', 'FeatureBagging', 'HBOS', 'KNN', 'LODA',
-                          'LOF', 'MCD', 'PCA', 'DeepSVDD']:
-            model_dict[_] = PYOD
-            
-        model_dict['DAGMM'] = DAGMM
-        model_dict['DROCC'] = DROCC
-        model_dict['GOAD'] = GOAD
-        model_dict['ICL'] = ICL
-        model_dict['PlanarFlow'] = FlowModel
-        model_dict['DDPM'] = DDPM
-        model_dict['DTE-IG'] = DTEInverseGamma
-        model_dict['DTE-C'] = DTECategorical
-        
-        # Create dataframes to save the results
-        aucroc_name = dir + str(seed) + "_AUCROC.csv"
-        aucpr_name = dir + str(seed) + "_AUCPR.csv"
-        f1_name = dir + str(seed) + "_AUCF1.csv"
-        train_name = dir + str(seed) + "_TrainTime.csv"
-        inference_name = dir + str(seed) + "_InferenceTime.csv"
-        
-        try:
-            df_AUCROC = pd.read_csv(aucroc_name, index_col = 0) 
-        except:
-            df_AUCROC = pd.DataFrame(data=None)
-        try:
-            df_AUCPR = pd.read_csv(aucpr_name, index_col = 0)
-        except:
-            df_AUCPR = pd.DataFrame(data=None)
-        try:
-            df_F1 = pd.read_csv(f1_name, index_col = 0)
-        except:
-            df_F1 = pd.DataFrame(data=None)
-        try:
-            df_train = pd.read_csv(train_name, index_col = 0)
-        except:
-            df_train = pd.DataFrame(data=None)
-        try:
-            df_inference = pd.read_csv(inference_name, index_col = 0)
-        except:
-            df_inference = pd.DataFrame(data=None)
-
         for dataset in dataset_list:
             '''
             la: ratio of labeled anomalies, from 0.0 to 1.0
@@ -137,7 +133,7 @@ def main(args):
                 if name == 'DAGMM':
                     score = clf.predict_score(data['X_train'], data['X_test'])
                 else:
-                    score = clf.decision_function(data['X_test'])
+                    score = clf.predict_score(data['X_test'])
                 end_time = time.time(); time_inference = end_time - start_time
                 
                 indices = np.arange(len(data['y_test']))

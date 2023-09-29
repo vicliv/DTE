@@ -68,15 +68,15 @@ class DTE():
 
     def fit(self, X_train, y_train = None, X_test = None, y_test = None, verbose=False):
         if self.model is None: # allows retraining
-                self.model = resnet50()
-                self.model.fc = nn.Linear(self.model.fc.in_features, self.num_bins)
-                
-                self.model.fc = nn.Sequential(
-                    self.model.fc,
-                    nn.Softmax(1),
-                )
-                
-                self.model = self.model.to(self.device)
+            self.model = resnet50()
+            self.model.fc = nn.Linear(self.model.fc.in_features, self.num_bins)
+            
+            self.model.fc = nn.Sequential(
+                self.model.fc,
+                nn.Softmax(1),
+            )
+            
+            self.model = self.model.to(self.device)
 
         optimizer = Adam(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         train_loader = DataLoader(torch.from_numpy(X_train).float(), batch_size=self.batch_size, shuffle=True, drop_last=False)

@@ -5,7 +5,7 @@ Official implementation of "On Diffusion Modeling for Anomaly Detection". Includ
 
 ### 1. Install the required packages
 
-You will need to install [ADBench](https://arxiv.org/abs/2206.09426) and torchvision for this project. Python needs to be version 3.8+. ADBench has already most of the dependencies needed.
+You will need to install [ADBench](https://arxiv.org/abs/2206.09426) and torchvision for this project. Python needs to be version 3.8+. ADBench has already most of the dependencies needed for the project.
 
 To install all packages, run the following command:
 
@@ -50,13 +50,13 @@ For VisA, you first need to follow the data preprocessing from https://github.co
 
 For CIFAR10 and MNIST, to get the ResNet-34 pre-trained classification embeddings, run `python vision/data/preprocess.py`.
 
-For CIFAR10 with vicreg pre-trained embeddings, you first need to download the weights available [here](https://sigmoidprime.s3.eu-central-1.amazonaws.com/vicreg/checkpoint.pt), found at https://github.com/augustwester/vicreg. Then, run `python vision/data/preprocess.py --model vicreg` keep the file "checkpoint.pt" in the main directory.
+For CIFAR10 with vicreg pre-trained embeddings, you first need to download the weights available [here](https://sigmoidprime.s3.eu-central-1.amazonaws.com/vicreg/checkpoint.pt), found at https://github.com/augustwester/vicreg, weights provided by August Wester (2023) (c). Then, run `python vision/data/preprocess.py --model vicreg` keep the file "checkpoint.pt" in the main directory.
 
 You can now run the experiment using `python run_embeddings.py`
 
 ## Run the image experiments
 
-As in the previous section, place the folder "/VisA_pytorch" in the main directory after having followed the preprocessing at https://github.com/amazon-science/spot-diff/.
+As in the previous section, place the folder "/VisA_pytorch" in the main directory after having followed the preprocessing at https://github.com/amazon-science/spot-diff/. Then simply run `python run_images.py`
 
 ### Using the models on new datasets
 
@@ -66,6 +66,7 @@ To run using a new dataset, here is an example on *thyroid* of ADBench. Note the
 import numpy as np
 import sklearn.metrics as skm
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 from diffusion.DTE import DTECategorical
 import os
@@ -79,7 +80,27 @@ data = np.load(os.path.join(DATA_PATH, 'Classical', dataset + '.npz'), allow_pic
 X = data['X']
 y = data['y']
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, shuffle=True, stratify=y)
+
+test_size = 0.5 # number of normal samples to go in the test set
+
+# split the data to have the normal data as training set (semi-supervised setting)
+indices = np.arange(len(X))
+normal_indices = indices[y == 0]
+anomaly_indices = indices[y == 1]
+
+train_size = round((1-test_size) * normal_indices.size)
+train_indices, test_indices = normal_indices[:train_size], normal_indices[train_size:]
+test_indices = np.append(test_indices, anomaly_indices)
+
+X_train = X[train_indices]
+y_train = y[train_indices]
+X_test = X[test_indices]
+y_test = y[test_indices]
+
+# Standard scaling
+scaler = StandardScaler().fit(X_train)
+X_train = scaler.transform(X_train)
+X_test = scaler.transform(X_test)
 
 model = DTECategorical()
 
@@ -93,7 +114,7 @@ print(auc_roc)
 ### Settings and Results
 For the semi-supervised setting, we use 0.5 of the normal data in the training set, and the rest is in the test set with anomalies. For the unsupervised setting, we sample the whole dataset with replacement for the training data, while the test data is the whole dataset. This bootstrapping method allows us to test the variance over the training dataset for each method.
 
-The total amount of compute required to reproduce our experiments with five seeds, including all of the baselines and the proposed DTE model amounts to 473 GPU-hours for the unsupervised setting and 225 GPU-hours for the semi-supervised setting on an RTX8000 GPU with 48 gigabytes of memory.
+The total amount of compute required to reproduce our experiments with five seeds, including all of the baselines and the proposed DTE model amounts to 473 GPU-hours for the unsupervised setting and 225 GPU-hours for the semi-supervised setting on an RTX8000 GPU with 48 gigabytes of memory. There are a few models that are running on CPU only, which account for a few hours of runtime.
 
 
 **AUC ROC with standard deviation over 5 seeds for the semi-supervised setting.**
