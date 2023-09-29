@@ -39,7 +39,7 @@ def train_test_split_anomaly(X, y, train_split=0.5):
     return X[train_indices], y[train_indices], X[test_indices], y[test_indices]
 
 class DTENonParametric(object):
-    def __init__(self, seed = 0, model_name = "DTE-NP", batch_size = 64, K=32, T=300):
+    def __init__(self, seed = 0, model_name = "DTE-NP", batch_size = 64, K=5, T=300):
         beta_0 = 0.0001
         beta_T = 0.01
         self.T = T
