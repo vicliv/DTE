@@ -61,10 +61,10 @@ def main(args):
     # model_dict['ICL'] = ICL
     # model_dict['PlanarFlow'] = FlowModel
     model_dict['DDPM'] = DDPM
-    #model_dict['DTE-NP'] = DTENonParametric
+    model_dict['DTE-NP'] = DTENonParametric
     # model_dict['DTE-IG'] = DTEInverseGamma
-    #model_dict['DTE-C'] = DTECategorical
-    #model_dict['KNN'] = PYOD
+    model_dict['DTE-C'] = DTECategorical
+    model_dict['KNN'] = PYOD
 
     dir = './results/embeddings/resnet34/'
     
@@ -120,7 +120,7 @@ def main(args):
         
         for name, clf in model_dict.items():
             # model initialization
-            clf = clf(seed=seed, model_name=name, epochs=1)
+            clf = clf(seed=seed, model_name=name)
             print(name)
             
             # training, for unsupervised models the y label will be discarded
