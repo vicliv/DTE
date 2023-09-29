@@ -29,7 +29,7 @@ utils = Utils() # utility function
 utils.download_datasets(repo='github')
 ```
 
-## Run the experiments
+## Run the ADBench experiments
 
 To reproduce the results from the paper uses `run.py` with the argument for the supervision setting to use.
 
@@ -40,6 +40,16 @@ For semi-supervised, use:
 `python run.py --setting semi --seed 0`
 
 We ran the seeds 0,1,2,3,4 for the experiments and report the average and standard deviations over thoses seeds.
+
+## Run the image embeddings experiments
+
+For VisA, you first need to follow the data proprecessing from https://github.com/amazon-science/spot-diff/ with a split type of 1cls. Place the folder "/VisA_pytorch" in the main directory. Then run visa_embed.py to create the embeddings, you can select the model wanted to create the embedding with either resnet34 or vicreg.
+
+`python vision/data/visa_preprocess.py`
+
+For CIFAR10 and MNIST, to get the ResNet-34 pre-trained classification embeddings, run `python vision/data/preprocess.py`.
+
+For CIFAR10 with vicreg pre-trained embeddings, you first need to download the weights available [here] (https://sigmoidprime.s3.eu-central-1.amazonaws.com/vicreg/checkpoint.pt), found at https://github.com/augustwester/vicreg. Then, run `python vision/data/preprocess.py --model vicreg` keep the file "checkpoint.pt" in the main directory.
 
 
 ### Using the models on new dataset
