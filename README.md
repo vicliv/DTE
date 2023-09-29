@@ -65,7 +65,6 @@ To run using a new dataset, here is an example on *thyroid* of ADBench. Note the
 ```
 import numpy as np
 import sklearn.metrics as skm
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 from diffusion.DTE import DTECategorical
