@@ -1,0 +1,2 @@
+adbench == 0.1.11
+torchvision >= 0.14.1

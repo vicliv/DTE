@@ -5,18 +5,19 @@ Official implementation of "On Diffusion Modeling for Anomaly Detection". Includ
 
 ### 1. Install the required packages
 
-You will need to install [ADBench](https://arxiv.org/abs/2206.09426), which will have all the dependency you need for this project. Python needs to be version 3.8+.
+You will need to install [ADBench](https://arxiv.org/abs/2206.09426) and torchvision for this project. Python needs to be version 3.8+. ADBench has already most of the dependencies needed.
 
 To install all packages, run the following command:
 
 `
-pip install adbench
+pip install -r requirements.txt
 `
 
-Note: this is not necessary to run only the deep diffusion models. You would only needs:
+Note: this is not necessary to run only the diffusion models. You would only needs:
 - numpy
 - torch
 - scikit-learn
+- scipy
 
 
 ### 2. Download the ADBench Datasets
@@ -43,16 +44,21 @@ We ran the seeds 0,1,2,3,4 for the experiments and report the average and standa
 
 ## Run the image embeddings experiments
 
-For VisA, you first need to follow the data proprecessing from https://github.com/amazon-science/spot-diff/ with a split type of 1cls. Place the folder "/VisA_pytorch" in the main directory. Then run visa_embed.py to create the embeddings, you can select the model wanted to create the embedding with either resnet34 or vicreg.
+For VisA, you first need to follow the data preprocessing from https://github.com/amazon-science/spot-diff/ with a split type of 1cls. Place the folder "/VisA_pytorch" in the main directory. To create the embeddings, you can select the model wanted to create the embedding with either resnet34 or vicreg and run:
 
-`python vision/data/visa_preprocess.py`
+`python vision/data/visa_preprocess.py --model resnet34`
 
 For CIFAR10 and MNIST, to get the ResNet-34 pre-trained classification embeddings, run `python vision/data/preprocess.py`.
 
 For CIFAR10 with vicreg pre-trained embeddings, you first need to download the weights available [here](https://sigmoidprime.s3.eu-central-1.amazonaws.com/vicreg/checkpoint.pt), found at https://github.com/augustwester/vicreg. Then, run `python vision/data/preprocess.py --model vicreg` keep the file "checkpoint.pt" in the main directory.
 
+You can now run the experiment using `python run_embeddings.py`
 
-### Using the models on new dataset
+## Run the image experiments
+
+As in the previous section, place the folder "/VisA_pytorch" in the main directory after having followed the preprocessing at https://github.com/amazon-science/spot-diff/.
+
+### Using the models on new datasets
 
 To run using a new dataset, here is an example on *thyroid* of ADBench. Note the importance of Standard Scaling for the diffusion-based models; we found that it is crucial since the added noise assumes that each feature is centered at 0 and, as we use gaussian noise, having standard scaling helps the noise to cover the whole space for anomaly detection.
 
