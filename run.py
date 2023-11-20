@@ -5,7 +5,6 @@ from baselines.drocc import DROCC
 from baselines.normalizing_flow import FlowModel
 from baselines.goad import GOAD
 from baselines.icl import ICL
-from baselines.anogan import AnoGAN
 from baselines.vae import Vae
 from baselines.slad.slad import SLAD
 from baselines.deep_iforest.dif import DIF
