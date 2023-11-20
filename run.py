@@ -100,7 +100,6 @@ def main(args):
     except:
         df_inference = pd.DataFrame(data=None)
     
-    isSkipped = False
     # Get the datasets from ADBench
     for dataset_list in [datagenerator.dataset_list_classical, datagenerator.dataset_list_cv, datagenerator.dataset_list_nlp]:
         for dataset in dataset_list:
