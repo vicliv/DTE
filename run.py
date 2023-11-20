@@ -1,9 +1,14 @@
 from adbench.baseline.PyOD import PYOD
+from adbench.baseline.GANomaly.run import GANomaly
 from baselines.dagmm import DAGMM
 from baselines.drocc import DROCC
 from baselines.normalizing_flow import FlowModel
 from baselines.goad import GOAD
 from baselines.icl import ICL
+from baselines.anogan import AnoGAN
+from baselines.vae import Vae
+from baselines.slad.slad import SLAD
+from baselines.deep_iforest.dif import DIF
 
 import argparse
 import numpy as np
@@ -62,6 +67,10 @@ def main(args):
     model_dict['DDPM'] = DDPM
     model_dict['DTE-IG'] = DTEInverseGamma
     model_dict['DTE-C'] = DTECategorical
+    model_dict['VAE'] = Vae
+    model_dict['GANomaly'] = GANomaly
+    model_dict['SLAD'] = SLAD
+    model_dict['DIF'] = DIF
     
     # Create dataframes to save the results
     aucroc_name = dir + str(seed) + "_AUCROC.csv"
@@ -91,6 +100,7 @@ def main(args):
     except:
         df_inference = pd.DataFrame(data=None)
     
+    isSkipped = False
     # Get the datasets from ADBench
     for dataset_list in [datagenerator.dataset_list_classical, datagenerator.dataset_list_cv, datagenerator.dataset_list_nlp]:
         for dataset in dataset_list:
@@ -100,6 +110,8 @@ def main(args):
             noise_type: inject data noises for testing model robustness, can be duplicated_anomalies, irrelevant_features or label_contamination
             '''
             print(dataset)
+            # if dataset in df_AUCROC.index.values:
+            #     continue
             
             # import the dataset
             datagenerator.dataset = dataset # specify the dataset name
@@ -121,12 +133,15 @@ def main(args):
             
             for name, clf in model_dict.items():
                 # model initialization
-                clf = clf(seed=seed, model_name=name)
                 print(name)
+                if name == "VAE":
+                    clf = clf(seed=seed, model_name=name, num_features=data['X_train'].shape[-1])
+                else:
+                    clf = clf(seed=seed, model_name=name)
                 
                 # training, for unsupervised models the y label will be discarded
                 start_time = time.time()
-                clf = clf.fit(data['X_train'])
+                clf = clf.fit(data['X_train'], np.zeros_like(data['y_train']))
                 end_time = time.time(); time_fit = end_time - start_time 
                 
                 start_time = time.time()
