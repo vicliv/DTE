@@ -141,7 +141,7 @@ def main(args):
                 
                 # training, for unsupervised models the y label will be discarded
                 start_time = time.time()
-                clf = clf.fit(data['X_train'], np.zeros_like(data['y_train']))
+                clf = clf.fit(data['X_train'])
                 end_time = time.time(); time_fit = end_time - start_time 
                 
                 start_time = time.time()
