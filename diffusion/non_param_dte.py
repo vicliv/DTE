@@ -12,6 +12,11 @@ matplotlib.rcParams.update({'font.size': 12})
 
 from scipy.stats import invgamma
 
+"""
+We do not recommand using this code, it is not efficient and provides the same results
+as kNN for anomaly detection, this is just to showcase how it works. Instead, use kNN
+from the PyOD library with a parameter method="mean".
+"""
 
 # semi supervised train test split
 def binning(t, T,  num_bins=30):
@@ -39,7 +44,7 @@ def train_test_split_anomaly(X, y, train_split=0.5):
     return X[train_indices], y[train_indices], X[test_indices], y[test_indices]
 
 class DTENonParametric(object):
-    def __init__(self, seed = 0, model_name = "DTE-NP", batch_size = 64, K=32, T=300):
+    def __init__(self, seed = 0, model_name = "DTE-NP", batch_size = 64, K=5, T=500):
         beta_0 = 0.0001
         beta_T = 0.01
         self.T = T
@@ -212,6 +217,7 @@ class DTENonParametric(object):
     def predict_score(self, X_test):
         p_t, invgamma_p_t = self.nonparametric(X_test, self.X_train, batch_size=self.batch_size, timestep=0, eval=True)
         
-        preds = torch.argmax(invgamma_p_t,axis=-1).float().numpy()
+        #preds = torch.argmax(invgamma_p_t,axis=-1).float().numpy()
+        preds = np.matmul(invgamma_p_t, np.arange(0, self.T))
 
         return preds
