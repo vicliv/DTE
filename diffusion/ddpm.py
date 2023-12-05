@@ -408,7 +408,7 @@ class DDPM():
                     posterior_variance_t = torch.take(posterior_variance, t.cpu()).unsqueeze(1).to(self.device)  
                 
                     z = torch.randn_like(x).to(self.device)
-                    sample = p_mean #+ torch.sqrt(posterior_variance_t) * z
+                    sample = p_mean + torch.sqrt(posterior_variance_t) * z
 
             return sample
         
