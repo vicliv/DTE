@@ -2,6 +2,8 @@
 File from ADBench https://github.com/Minqi824/ADBench.git 
 that was modified to integrate the new semi-supervised setting
 and add more flexibility.
+Copyright (c) 2022, Mickey (Minqi)
+All rights reserved.
 """
 
 import numpy as np
