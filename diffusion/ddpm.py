@@ -2,6 +2,8 @@
 Part of the code is adapted from the ResNet model (https://arxiv.org/abs/2106.11959)
 provided at https://github.com/Yura52/rtdl and also adapted from https://github.com/rotot0/tab-ddpm
 The model was modified to integrate Time Embedding.
+On Diffusion Modeling for Anomaly Detection - Diffusion Time Estimation
+@Author: Victor Livernoche <vlivernoche@gmail.com>
 """
 
 import torch.nn.functional as F
