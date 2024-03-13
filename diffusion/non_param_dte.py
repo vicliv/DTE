@@ -1,4 +1,7 @@
-# %%
+"""
+On Diffusion Modeling for Anomaly Detection - Diffusion Time Estimation
+@Author: Vineet Jain, Victor Livernoche <vlivernoche@gmail.com>
+"""
 import numpy as np
 import torch
 import torch.distributions as dist
