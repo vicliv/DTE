@@ -1,3 +1,8 @@
+"""
+On Diffusion Modeling for Anomaly Detection - Diffusion Time Estimation
+@Author: Victor Livernoche <vlivernoche@gmail.com>
+"""
+
 import torch.nn.functional as F
 from torch import nn
 import torch
