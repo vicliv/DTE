@@ -60,7 +60,7 @@ For VisA, you first need to follow the data preprocessing from https://github.co
 
 For CIFAR10 and MNIST, to get the ResNet-34 pre-trained classification embeddings, run `python vision/data/preprocess.py`.
 
-For CIFAR10 with vicreg pre-trained embeddings, you first need to download the weights available [here](https://sigmoidprime.s3.eu-central-1.amazonaws.com/vicreg/checkpoint.pt), found at https://github.com/augustwester/vicreg, weights provided by August Wester (2023) (c). Then, run `python vision/data/preprocess.py --model vicreg` keep the file "checkpoint.pt" in the main directory.
+For CIFAR10 with vicreg pre-trained embeddings, you first need to download the weights available [here](https://sigmoidprime.s3.eu-central-1.amazonaws.com/vicreg/checkpoint.pt), found at https://github.com/augustwester/vicreg, weights provided by August Wester (2023) (c). Then, run `python vision/data/preprocess.py --model vicreg` and `python vision/data/preprocess.py --model resnet34` keep the file "checkpoint.pt" in the main directory.
 
 You can now run the experiment using `python run_embeddings.py`
 
