@@ -9,13 +9,17 @@ You will need to install [ADBench](https://arxiv.org/abs/2206.09426) and torchvi
 
 To install all packages, run the following command:
 
+
 `
 pip install -r requirements.txt
 `
+
+
 After this is done, as of right now there is a dependency issue with ADBench and PyOD, so you need to install manually PyoD with:
 `
 pip install --upgrade PyOD
 `
+
 
 Note: this is not necessary to run only the diffusion models. You would only needs:
 - numpy
