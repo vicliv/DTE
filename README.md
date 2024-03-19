@@ -1,5 +1,18 @@
 # Diffusion Time Estimation
-Official implementation of "On Diffusion Modeling for Anomaly Detection". Includes the code for diffusion-based models for tabular data with Diffusion Time Estimation (DTE) and multiple other baselines.
+Official implementation of [On Diffusion Modeling for Anomaly Detection](https://openreview.net/forum?id=lR3rk7ysXz&noteId=lR3rk7ysXz) from The Twelfth International Conference on Learning Representations (ICLR 2024). Includes the code for diffusion-based models for tabular data and image datasets with Diffusion Time Estimation (DTE) and multiple other baselines.
+
+## Citation
+
+```
+@inproceedings{
+   livernoche2024on,
+   title={On Diffusion Modeling for Anomaly Detection},
+   author={Victor Livernoche and Vineet Jain and Yashar Hezaveh and Siamak Ravanbakhsh},
+   booktitle={The Twelfth International Conference on Learning Representations},
+   year={2024},
+   url={https://openreview.net/forum?id=lR3rk7ysXz}
+}
+```
 
 ## Setup Instructions
 
@@ -260,3 +273,6 @@ The total amount of compute required to reproduce our experiments with five seed
  
 
 Note: DTE-NP is for the non-parametric DTE `DTENonParametric`, DTE-IG is for the inverse gamma DTE `DTEInverseGamma`, and DTE-C is for the categorical DTE `DTECategorical`.
+
+
+
