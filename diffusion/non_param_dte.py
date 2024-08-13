@@ -6,6 +6,8 @@ import numpy as np
 import torch
 import torch.distributions as dist
 
+from sklearn.neighbors import NearestNeighbors, BallTree
+
 import matplotlib
 from matplotlib import pyplot as plt
 
@@ -42,7 +44,7 @@ def train_test_split_anomaly(X, y, train_split=0.5):
     return X[train_indices], y[train_indices], X[test_indices], y[test_indices]
 
 class DTENonParametric(object):
-    def __init__(self, seed = 0, model_name = "DTE-NP", batch_size = 64, K=5, T=300):
+    def __init__(self, seed = 0, model_name = "DTE-NP", K=5, T=1000):
         beta_0 = 0.0001
         beta_T = 0.01
         self.T = T
@@ -51,7 +53,15 @@ class DTENonParametric(object):
         self.T_range = np.arange(0, self.T)
         betas = torch.linspace(beta_0, beta_T, self.T)
         
-        self.batch_size = batch_size
+        self.neigh = NearestNeighbors(n_neighbors=K,
+                                       radius=1.0,
+                                       algorithm='auto',
+                                       leaf_size=30,
+                                       metric='minkowski',
+                                       p=2,
+                                       metric_params=None,
+                                       n_jobs=1)
+        
 
         alphas = 1. - betas
         self.alphas_cumprod = torch.cumprod(alphas, axis=0)
@@ -70,23 +80,27 @@ class DTENonParametric(object):
             log_likelihood[t, ...] = dist_t.log_prob(X)
         return log_likelihood
 
-    def kernel_estimator(self, X_test, X_train, timestep=0, eval=False, verbose=False):
-        _, dim = X_train.shape
+    def kernel_estimator(self, X_test, timestep=0, eval=False):
+        _, dim = X_test.shape
         X_test = torch.from_numpy(X_test).float()
-        X_train = torch.from_numpy(X_train).float()
         if eval:
             X_noisy = X_test.clone()
         else:
             X_noisy = create_noisy_data(X_test, self.sqrt_one_minus_alphas_cumprod[timestep])
-            
-        pairwise_diff = compute_pairwise_diff(X_noisy, X_train)
 
         log_p_t_given_y = torch.zeros((self.T, X_test.shape[0]))
     
-        # non-parametric solution
-        pairwise_norm_2 = torch.sum(pairwise_diff**2, axis=-1)
+        # non-parametric solution    
+        min_norm_2 = np.zeros([X_test.shape[0], 1])
 
-        min_norm_2 = (torch.topk(pairwise_norm_2, self.K, largest=False, axis=-1).values).mean(-1)
+        for i in range(X_test.shape[0]):
+            x_i = X_test[i, :]
+            x_i = np.asarray(x_i).reshape(1, x_i.shape[0])
+
+            # get the distance of the current point
+            dist_arr, _ = self.tree.query(x_i, k=self.K)
+            dist = np.mean(dist_arr, -1)
+            min_norm_2[i, :] = dist[-1]
 
         density = torch.zeros((self.T, X_test.shape[0]))
         for i in range(min_norm_2.shape[0]):
@@ -98,18 +112,9 @@ class DTENonParametric(object):
         return log_p_t_given_y.exp().t(), density.exp().t()
     
 
-    def nonparametric(self, X_test, X_train, batch_size=64, timestep=0, eval=False, verbose=False):
-        num_batches = int(np.ceil(X_test.shape[0] / batch_size))
+    def nonparametric(self, X_test, timestep=0, eval=False):
 
-        p_t_given_y = torch.zeros((X_test.shape[0], self.T))
-        density = torch.zeros((X_test.shape[0], self.T))
-        for i in range(num_batches):
-            if verbose:
-                print('Batch {}/{}'.format(i+1, num_batches), end='\r')
-            start_idx = i * batch_size
-            end_idx = min((i+1) * batch_size, X_test.shape[0])
-            p_t_given_y[start_idx:end_idx, :], density[start_idx:end_idx, :] = \
-                self.kernel_estimator(X_test[start_idx:end_idx, :], X_train, timestep=timestep, eval=eval, verbose=verbose)
+        p_t_given_y, density = self.kernel_estimator(X_test, timestep=timestep, eval=eval)
         
         return p_t_given_y, density
 
@@ -208,12 +213,17 @@ class DTENonParametric(object):
         return
 
     def fit(self, X_train, y_train=None):
-        self.X_train = X_train
+        self.neigh.fit(X_train)
+        
+        if self.neigh._tree is not None:
+            self.tree = self.neigh._tree
+        else:
+            self.tree = BallTree(X_train, leaf_size=30, metric='minkowski')
         
         return self
 
     def predict_score(self, X_test):
-        p_t, invgamma_p_t = self.nonparametric(X_test, self.X_train, batch_size=self.batch_size, timestep=0, eval=True)
+        p_t, invgamma_p_t = self.nonparametric(X_test, timestep=0, eval=True)
         
         preds = torch.argmax(invgamma_p_t,axis=-1).float().numpy()
 
