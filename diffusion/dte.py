@@ -184,7 +184,7 @@ class DTECategorical(DTE):
 
 class DTEInverseGamma(DTE):
     def __init__(self, seed = 0, model_name = "DTE_inverse_gamma", hidden_size = [128, 128], epochs = 400, batch_size = 64, lr = 1e-4, weight_decay = 0, T=300):        
-        super().__init__(seed, model_name, hidden_size, epochs, batch_size, lr, weight_decay, T, 1)
+        super().__init__(seed, model_name, hidden_size, epochs, batch_size, lr, weight_decay, T, 0)
         
     def compute_loss(self, x_0, t):
         # get the loss based on the input and timestep
