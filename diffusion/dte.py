@@ -64,7 +64,7 @@ class DTE():
         self.num_bins = num_bins
         
         if device is None:       
-            self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         else:
             self.device = device
         self.seed = seed
@@ -159,11 +159,11 @@ class DTE():
         return preds
   
 class DTECategorical(DTE):
-    def __init__(self, seed = 0, model_name = "DTE_categorical", hidden_size = [256, 512, 256], epochs = 400, batch_size = 64, lr = 1e-4, weight_decay = 5e-4, T=400, num_bins=7):
+    def __init__(self, seed = 0, model_name = "DTE_categorical", hidden_size = [256, 512, 256], epochs = 400, batch_size = 64, lr = 1e-4, weight_decay = 5e-4, T=400, num_bins=7, device=None):
         if num_bins < 2:
             raise ValueError("num_bins must be greater than or equal to 2")
         
-        super().__init__(seed, model_name, hidden_size, epochs, batch_size, lr, weight_decay, T, num_bins)
+        super().__init__(seed, model_name, hidden_size, epochs, batch_size, lr, weight_decay, T, num_bins, device)
         
         
     def compute_loss(self, x_0, t):
@@ -183,8 +183,8 @@ class DTECategorical(DTE):
         return loss
 
 class DTEInverseGamma(DTE):
-    def __init__(self, seed = 0, model_name = "DTE_inverse_gamma", hidden_size = [128, 128], epochs = 400, batch_size = 64, lr = 1e-4, weight_decay = 0, T=300):        
-        super().__init__(seed, model_name, hidden_size, epochs, batch_size, lr, weight_decay, T, 0)
+    def __init__(self, seed = 0, model_name = "DTE_inverse_gamma", hidden_size = [256, 512, 256], epochs = 400, batch_size = 64, lr = 1e-4, weight_decay = 5e-4, T=400, device=None):        
+        super().__init__(seed, model_name, hidden_size, epochs, batch_size, lr, weight_decay, T, 0, device)
         
     def compute_loss(self, x_0, t):
         # get the loss based on the input and timestep
@@ -203,9 +203,25 @@ class DTEInverseGamma(DTE):
         
         return loss
 
+    def predict_score(self, X):
+        N, dim = X.shape
+        test_loader = DataLoader(torch.from_numpy(X).float(), batch_size=100, shuffle=False, drop_last=False)
+        preds = []
+        self.model.eval()
+        for x in test_loader:
+            # predict the timestep based on x, or the probability of each class for the classification
+            pred_t = self.model(x.to(self.device).to(torch.float32))
+            pred_t = torch.pow(pred_t, 2).squeeze() / ((0.5 * dim - 1)) # mode of the inverse gamma distribution
+            preds.append(pred_t.cpu().detach().numpy())
+
+        preds = np.concatenate(preds, axis=0)
+        
+        return preds
+
+
 class DTEGaussian(DTE):
-    def __init__(self, seed = 0, model_name = "DTE_gaussian", hidden_size = [256, 512, 256], epochs = 400, batch_size = 64, lr = 1e-4, weight_decay = 5e-4, T=400):        
-        super().__init__(seed, model_name, hidden_size, epochs, batch_size, lr, weight_decay, T, 0)
+    def __init__(self, seed = 0, model_name = "DTE_gaussian", hidden_size = [256, 512, 256], epochs = 400, batch_size = 64, lr = 1e-4, weight_decay = 5e-4, T=400, device=None):        
+        super().__init__(seed, model_name, hidden_size, epochs, batch_size, lr, weight_decay, T, 0, device)
         
     def compute_loss(self, x_0, t):
         # get the loss based on the input and timestep
@@ -222,46 +238,3 @@ class DTEGaussian(DTE):
         loss = nn.MSELoss()(t_pred, target)
         
         return loss
-    
-
-class DTEBagging():
-    def __init__(self, num_bags = 5, hidden_size = [256, 512, 256], epochs = 200, batch_size = 64, lr = 1e-4, weight_decay = 5e-4, T=300, num_bins=7):
-        self.hidden_size = hidden_size
-        self.epochs = epochs
-        self.batch_size = batch_size
-        self.lr = lr
-        self.weight_decay = weight_decay
-        
-        self.T = T
-        self.num_bins = num_bins
-
-        self.num_bags = num_bags
-        
-        self.models = []
-    
-    def fit(self, X_train, y_train, X_test, Y_test):
-        for _ in range(self.num_bags):
-            if self.num_bags > 1:
-                indices = np.arange(len(X_train))
-                random_idx = np.random.choice(indices, size = len(indices))
-                X_train = X_train[random_idx, :]           
-       
-            model = DTE(hidden_size = self.hidden_size, epochs = self.epochs, batch_size = self.batch_size, lr = self.lr, weight_decay = self.weight_decay, T=self.T, num_bins=self.num_bins)
-            self.models.append(model)
-            
-            model.fit(X_train=X_train, y_train=y_train, X_test = X_test, Y_test = Y_test)
-        
-        return self
-      
-    def predict_score(self, X):
-        total = []
-        
-        # compute prediction for all models
-        for model in self.models:
-            total.append(model.predict_score(X))
-        
-        # sum the predictions
-        pred = np.stack(total)
-        preds = np.sum(pred, axis=0)
-
-        return preds
